@@ -1,1 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JammyShop - Secure Checkout</title>
+  <link rel="stylesheet" href="payment-style.css">
+</head>
+<body>
 
+  <div class="checkout-container">
+    
+    <!-- Order Summary Card -->
+    <div class="summary-box">
+      <h2>Order Summary</h2>
+      <div class="summary-row">
+        <span id="item-name">Selected Item (ex3)</span>
+        <span id="item-price" class="bold">40,000ks</span>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-row total">
+        <span>Total Due:</span>
+        <span id="total-price">40,000ks</span>
+      </div>
+    </div>
+
+    <!-- Payment Form Card -->
+    <div class="payment-box">
+      <h2>Secure Payment</h2>
+      <form id="payment-form">
+        
+        <div class="input-group">
+          <label for="card-name">Cardholder Name</label>
+          <input type="text" id="card-name" placeholder="John Doe" required>
+        </div>
+
+        <div class="input-group">
+          <label for="card-number">Card Number</label>
+          <input type="text" id="card-number" placeholder="1234 5678 9101 1121" maxlength="19" required>
+        </div>
+
+        <div class="input-row">
+          <div class="input-group">
+            <label for="card-expiry">Expiry Date</label>
+            <input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5" required>
+          </div>
+          <div class="input-group">
+            <label for="card-cvc">CVC</label>
+            <input type="text" id="card-cvc" placeholder="123" maxlength="3" required>
+          </div>
+        </div>
+
+        <button type="submit" id="pay-btn">Pay 40,000ks Now</button>
+      </form>
+      <div id="payment-message" class="hidden"></div>
+    </div>
+
+  </div>
+
+  <script src="payment-script.js"></script>
+</body>
+</html>
