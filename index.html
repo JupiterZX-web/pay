@@ -3,201 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Wallet Control & 3D Analytics Hub</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Enterprise Paper Trading Simulator</title>
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #151f32;
+            --bg-input: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --color-up: #10b981;
+            --color-down: #ef4444;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 24px;
+            line-height: 1.5;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 968px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Portfolio Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .metric-box h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        /* Tables styling */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 12px 16px;
+            border-bottom: 2px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Order Form controls */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        button {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-buy { background-color: var(--color-up); color: #fff; }
+        .btn-sell { background-color: var(--color-down); color: #fff; }
+        .btn-action { background-color: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: 6px 12px; font-size: 0.85rem;}
+        .btn-action:hover { background-color: var(--border); }
+        
+        .price-up { color: var(--color-up); font-weight: 600; }
+        .price-down { color: var(--color-down); font-weight: 600; }
+        
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            background: var(--bg-card);
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+            transform: translateY(200%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        .toast.show { transform: translateY(0); }
+    </style>
 </head>
 <body>
 
-    <!-- PORTAL ELEMENT: SYSTEM SECURITY LOGIN -->
-    <div id="authPanel" class="auth-card">
-        <h1>Administrative Core</h1>
-        <p>E-Wallet Master Token Database Gateway</p>
-        <div id="authToast" class="toast hidden"></div>
-        <div class="form-group">
-            <label for="adminUser">Operator ID</label>
-            <input type="text" id="adminUser" class="form-input" placeholder="Username...">
-        </div>
-        <div class="form-group">
-            <label for="adminPass">Security Passphrase</label>
-            <input type="password" id="adminPass" class="form-input" placeholder="Password...">
-        </div>
-        <button class="btn btn-primary" onclick="verifyAdminGateway()">Authenticate Session</button>
-    </div>
-
-    <!-- PORTAL ELEMENT: ADMINISTRATIVE INTERFACE DASHBOARD -->
-    <div id="dashboardPanel" class="dashboard-container hidden">
-        <div class="dashboard-header">
-            <div class="header-title">
-                <h2>E-Wallet Master Analytics Control Hub</h2>
-                <p>Operator Session: <span id="operatorDisplay" style="color: var(--primary); font-weight:600;"></span></p>
-            </div>
-            <button class="btn btn-logout" onclick="terminateSession()">Lock Console</button>
-        </div>
-
-        <div id="dashboardToast" class="toast hidden"></div>
-
-        <div class="workspace-grid">
-            <!-- COLUMN LEFT: INTERACTIVE DATA ENGINE PANELS -->
-            <div class="control-grid">
-                
-                <!-- USER INTERFACE ONBOARD ENGINE -->
-                <div class="glass-panel">
-                    <h3>Initialize Client Wallet Profile</h3>
-                    <div class="form-group">
-                        <label for="newUsername">Account Holder Identifier</label>
-                        <input type="text" id="newUsername" class="form-input" placeholder="e.g. charlie">
-                    </div>
-                    <div class="form-group">
-                        <label for="initialDeposit">Opening Capital Asset Holding ($)</label>
-                        <input type="number" id="initialDeposit" class="form-input" value="0.00" min="0" step="0.01">
-                    </div>
-                    <button class="btn btn-primary" onclick="createNewUser()">Onboard Wallet</button>
+<div class="dashboard">
+    <!-- Left Workspace Column -->
+    <div class="main-content">
+        <!-- Live Portfolio Header Card -->
+        <div class="card">
+            <div class="card-title">Account Valuation</div>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Net Worth</span>
+                    <h3 id="networth-display">$100,000.00</h3>
                 </div>
-
-                <!-- SYSTEM FINANCIAL ADJUSTMENT ENGINE -->
-                <div class="glass-panel">
-                    <h3>Balance Modification Framework</h3>
-                    <div class="form-group">
-                        <label for="targetUser">Target Wallet Profile ID</label>
-                        <input type="text" id="targetUser" class="form-input" placeholder="e.g. alice" oninput="syncInteractiveCard()">
-                    </div>
-                    <div class="form-group">
-                        <label for="transactionAmount">Asset Transference Delta Value ($)</label>
-                        <input type="number" id="transactionAmount" class="form-input" min="0.01" step="0.01" placeholder="0.00">
-                    </div>
-                    <div class="btn-row">
-                        <button class="btn btn-success" onclick="modifyFunds('add')">Inject Funds</button>
-                        <button class="btn btn-danger" onclick="modifyFunds('take')">Confiscate Funds</button>
-                    </div>
+                <div class="metric-box">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Available Cash</span>
+                    <h3 id="cash-display">$100,000.00</h3>
                 </div>
-            </div>
-
-            <!-- COLUMN RIGHT: REAL-TIME 3D TELEMETRY GRAPHICS -->
-            <div class="control-grid">
-                <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                    <h3>Live 3D Digital Card Node</h3>
-                    <div class="scene-3d">
-                        <div class="card-wrapper" id="card3D" onclick="this.classList.toggle('is-flipped')">
-                            <!-- CARD FRONT VIEW -->
-                            <div class="card-face card-front">
-                                <div class="card-top">
-                                    <div class="smart-chip"></div>
-                                    <div class="brand-name">Vault Node</div>
-                                </div>
-                                <div class="card-number">•••• •••• •••• 7890</div>
-                                <div class="card-bottom">
-                                    <div>
-                                        <div class="meta-label">Node Holder</div>
-                                        <div class="meta-value" id="cardHolderDisplay">SYSTEM ACTIVE</div>
-                                    </div>
-                                    <div class="payment-logo">
-                                        <div class="circle c-red"></div>
-                                        <div class="circle c-orange"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- CARD REAR VIEW -->
-                            <div class="card-face card-back">
-                                <div class="magnetic-strip"></div>
-                                <div class="signature-bar">
-                                    <div class="cvv-code">883</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <p style="color: var(--text-muted); font-size:12px;">Move mouse over canvas to tilt card; Click to spin front/back.</p>
+                <div class="metric-box">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Total Return</span>
+                    <h3 id="return-display">$0.00</h3>
                 </div>
             </div>
         </div>
 
-        <!-- SEARCHABLE LEDGER VIEWPORT MATRIX -->
-        <div class="glass-panel">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3>Database Vault Registries</h3>
-                <input type="text" id="ledgerSearch" class="form-input search-box" style="width:250px; margin:0;" placeholder="Search accounts..." oninput="renderFilteredLedger()">
+        <!-- Live Watchlist Table Container -->
+        <div class="card">
+            <div class="card-title">Live Spot Market</div>
+            <div class="table-container">
+                <table id="market-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Company Name</th>
+                            <th>Market Price</th>
+                            <th>Daily Change</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamic Injection -->
+                    </tbody>
+                </table>
             </div>
-            <table class="ledger-table">
-                <thead>
-                    <tr>
-                        <th>Wallet Account ID</th>
-                        <th>Liquid Valuation Asset Holding</th>
-                    </tr>
-                </thead>
-                <tbody id="ledgerTableBody"></tbody>
-            </table>
         </div>
 
-        <!-- RUNTIME TELEMETRY LOGS OUTPUT CONSOLE -->
-        <div class="glass-panel">
-            <h3>System Transaction Audit Console Streams</h3>
-            <div id="logTerminal" class="log-terminal"></div>
+        <!-- User Open Positions Inventory -->
+        <div class="card">
+            <div class="card-title">Your Asset Holdings</div>
+            <div class="table-container">
+                <table id="portfolio-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Shares Owned</th>
+                            <th>Avg Cost Basis</th>
+                            <th>Current Value</th>
+                            <th>Total PnL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamic Injection -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <script>
-        const API_BASE = "http://localhost:8080/api/wallet";
-        let localLedgerState = {};
+    <!-- Right Control Module Column -->
+    <div class="sidebar">
+        <div class="card">
+            <div class="card-title">Order Execution Desk</div>
+            
+            <div class="form-group">
+                <label for="asset-select">Asset Ticker</label>
+                <select id="asset-select" onchange="updateEstimatedCost()">
+                    <!-- Dynamic Injection -->
+                </select>
+            </div>
 
-        // 3D Credit Card Mouse-Tracking Rotation Vector Script
-        const cardWrapper = document.getElementById('card3D');
-        const tiltLimit = 20;
+            <div class="form-group">
+                <label for="quantity-input">Share Quantity</label>
+                <input type="number" id="quantity-input" value="10" min="1" step="1" oninput="updateEstimatedCost()">
+            </div>
 
-        document.addEventListener('mousemove', (e) => {
-            const bounds = cardWrapper.getBoundingClientRect();
-            const centerX = bounds.left + bounds.width / 2;
-            const centerY = bounds.top + bounds.height / 2;
-            const mouseX = e.clientX - centerX;
-            const mouseY = e.clientY - centerY;
+            <div class="form-group" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+                    <span>Estimated Principal:</span>
+                    <span id="est-cost" style="color: var(--text-main); font-weight: 600;">$0.00</span>
+                </div>
+            </div>
 
-            // Compute precise rotations relative to core position indexes
-            const rotX = -(mouseY / (window.innerHeight / 2)) * tiltLimit;
-            const rotY = (mouseX / (window.innerWidth / 2)) * tiltLimit;
+            <div class="btn-group">
+                <button class="btn-buy" onclick="processOrder('BUY')">BUY</button>
+                <button class="btn-sell" onclick="processOrder('SELL')">SELL</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-            // Protect card transformation metrics when flipped completely
-            if (!cardWrapper.classList.contains('is-flipped')) {
-                cardWrapper.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-            }
+<div id="notification-toast" class="toast">Order Executed Successfully</div>
+
+<script>
+    // State initialization pulling cached values if present
+    const STARTING_CASH = 100000.00;
+    let sessionState = JSON.parse(localStorage.getItem('paper_trading_state')) || {
+        cash: STARTING_CASH,
+        portfolio: {} // Schema: { TICKER: { shares: X, avgCost: Y } }
+    };
+
+    const trackedEquities = [
+        { symbol: 'AAPL', name: 'Apple Inc.', price: 175.20, base: 175.20 },
+        { symbol: 'TSLA', name: 'Tesla Inc.', price: 182.50, base: 182.50 },
+        { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 875.12, base: 875.12 },
+        { symbol: 'MSFT', name: 'Microsoft Corp.', price: 420.30, base: 420.30 },
+        { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 178.45, base: 178.45 }
+    ];
+
+    // Simulates natural variance in global asset pricing matrix
+    function simulateMarketTicks() {
+        trackedEquities.forEach(equity => {
+            const percentageShift = (Math.random() - 0.495) * 0.008; // Slight positive drift bias
+            equity.price *= (1 + percentageShift);
         });
+        saveAndRender();
+    }
 
-        document.addEventListener('mouseleave', () => {
-            if (!cardWrapper.classList.contains('is-flipped')) {
-                cardWrapper.style.transform = `rotateX(0deg) rotateY(0deg)`;
-            }
-        });
-
-        function syncInteractiveCard() {
-            const inputName = document.getElementById("targetUser").value.trim().toUpperCase();
-            document.getElementById("cardHolderDisplay").textContent = inputName || "SYSTEM ACTIVE";
-        }
-
-        // Core Server Interaction Handlers
-        async function verifyAdminGateway() {
-            const user = document.getElementById("adminUser").value.trim();
-            const pass = document.getElementById("adminPass").value;
-
-            try {
-                const response = await fetch(`${API_BASE}/login?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`, { method: 'POST' });
-                if (response.ok) {
-                    document.getElementById("adminUser").value = "";
-                    document.getElementById("adminPass").value = "";
-                    document.getElementById("authPanel").classList.add("hidden");
-                    document.getElementById("dashboardPanel").classList.remove("hidden");
-                    document.getElementById("operatorDisplay").textContent = user;
-                    
-                    fetchSystemDataUpdateLoop();
-                } else {
-                    const txt = await response.text();
-                    triggerNotification("authToast", txt, "error");
-                }
-            } catch (err) {
-                triggerNotification("authToast", "Server validation error: Core offline.", "error");
-            }
-        }
-
-        function terminateSession() {
-            document.getElementById("dashboardPanel").classList.add("hidden");
-            document.getElementById("authPanel").classList.remove("hidden");
-        }
-
-        async function fetchSystemDataUpdateLoop() {
-            try {
+    function saveAndRender() {
+        localStorage.setItem('paper_trading_state', JSON.stringify(sessionState));
+        
