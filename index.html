@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Paper Trading Simulator</title>
+    <title>Multi-Asset & Crypto Paper Trading Desk</title>
     <style>
         :root {
             --bg-main: #0b0f19;
             --bg-card: #151f32;
             --bg-input: #1e293b;
             --accent: #3b82f6;
-            --accent-hover: #2563eb;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --color-up: #10b981;
@@ -41,9 +40,7 @@
         }
 
         @media (max-width: 968px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
+            .dashboard { grid-template-columns: 1fr; }
         }
 
         .card {
@@ -63,7 +60,6 @@
             letter-spacing: 0.05em;
         }
 
-        /* Portfolio Metrics Grid */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -76,10 +72,7 @@
             margin-top: 4px;
         }
 
-        /* Tables styling */
-        .table-container {
-            overflow-x: auto;
-        }
+        .table-container { overflow-x: auto; }
 
         table {
             width: 100%;
@@ -101,14 +94,9 @@
             font-size: 0.95rem;
         }
 
-        tr:hover td {
-            background-color: rgba(255, 255, 255, 0.02);
-        }
+        tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
 
-        /* Order Form controls */
-        .form-group {
-            margin-bottom: 20px;
-        }
+        .form-group { margin-bottom: 20px; }
 
         .form-group label {
             display: block;
@@ -126,12 +114,9 @@
             color: var(--text-main);
             font-size: 1rem;
             outline: none;
-            transition: border-color 0.2s;
         }
 
-        select:focus, input:focus {
-            border-color: var(--accent);
-        }
+        select:focus, input:focus { border-color: var(--accent); }
 
         .btn-group {
             display: grid;
@@ -150,9 +135,7 @@
             transition: opacity 0.2s, transform 0.1s;
         }
 
-        button:active {
-            transform: scale(0.98);
-        }
+        button:active { transform: scale(0.98); }
 
         .btn-buy { background-color: var(--color-up); color: #fff; }
         .btn-sell { background-color: var(--color-down); color: #fff; }
@@ -181,9 +164,8 @@
 <body>
 
 <div class="dashboard">
-    <!-- Left Workspace Column -->
     <div class="main-content">
-        <!-- Live Portfolio Header Card -->
+        <!-- Account Status Overview -->
         <div class="card">
             <div class="card-title">Account Valuation</div>
             <div class="metrics-grid">
@@ -192,7 +174,7 @@
                     <h3 id="networth-display">$100,000.00</h3>
                 </div>
                 <div class="metric-box">
-                    <span style="color: var(--text-muted); font-size: 0.9rem;">Available Cash</span>
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Available Balance</span>
                     <h3 id="cash-display">$100,000.00</h3>
                 </div>
                 <div class="metric-box">
@@ -202,28 +184,26 @@
             </div>
         </div>
 
-        <!-- Live Watchlist Table Container -->
+        <!-- Global Watchlist Matrix -->
         <div class="card">
-            <div class="card-title">Live Spot Market</div>
+            <div class="card-title">Live Watchlist Matrix</div>
             <div class="table-container">
                 <table id="market-table">
                     <thead>
                         <tr>
                             <th>Symbol</th>
-                            <th>Company Name</th>
+                            <th>Asset Class</th>
                             <th>Market Price</th>
                             <th>Daily Change</th>
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- Dynamic Injection -->
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- User Open Positions Inventory -->
+        <!-- Open Position Ledger -->
         <div class="card">
             <div class="card-title">Your Asset Holdings</div>
             <div class="table-container">
@@ -231,35 +211,31 @@
                     <thead>
                         <tr>
                             <th>Symbol</th>
-                            <th>Shares Owned</th>
+                            <th>Inventory Balance</th>
                             <th>Avg Cost Basis</th>
                             <th>Current Value</th>
                             <th>Total PnL</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- Dynamic Injection -->
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Right Control Module Column -->
+    <!-- Active Trade Module -->
     <div class="sidebar">
         <div class="card">
-            <div class="card-title">Order Execution Desk</div>
+            <div class="card-title">Order Desk Module</div>
             
             <div class="form-group">
-                <label for="asset-select">Asset Ticker</label>
-                <select id="asset-select" onchange="updateEstimatedCost()">
-                    <!-- Dynamic Injection -->
-                </select>
+                <label for="asset-select">Select Asset</label>
+                <select id="asset-select" onchange="adjustQuantityParameters()"></select>
             </div>
 
             <div class="form-group">
-                <label for="quantity-input">Share Quantity</label>
-                <input type="number" id="quantity-input" value="10" min="1" step="1" oninput="updateEstimatedCost()">
+                <label for="quantity-input">Order Quantity</label>
+                <input type="number" id="quantity-input" value="1" min="0.000001" step="1" oninput="updateEstimatedCost()">
             </div>
 
             <div class="form-group" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
@@ -280,30 +256,36 @@
 <div id="notification-toast" class="toast">Order Executed Successfully</div>
 
 <script>
-    // State initialization pulling cached values if present
     const STARTING_CASH = 100000.00;
-    let sessionState = JSON.parse(localStorage.getItem('paper_trading_state')) || {
+    let sessionState = JSON.parse(localStorage.getItem('multi_asset_trading_state')) || {
         cash: STARTING_CASH,
-        portfolio: {} // Schema: { TICKER: { shares: X, avgCost: Y } }
+        portfolio: {} 
     };
 
+    // Consolidated global registry configuration utilizing live relative asset definitions
     const trackedEquities = [
-        { symbol: 'AAPL', name: 'Apple Inc.', price: 175.20, base: 175.20 },
-        { symbol: 'TSLA', name: 'Tesla Inc.', price: 182.50, base: 182.50 },
-        { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 875.12, base: 875.12 },
-        { symbol: 'MSFT', name: 'Microsoft Corp.', price: 420.30, base: 420.30 },
-        { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 178.45, base: 178.45 }
+        { symbol: 'BTC', name: 'Bitcoin', type: 'Crypto', price: 61500.00, base: 61500.00, step: 0.000001, decimals: 6 },
+        { symbol: 'AAPL', name: 'Apple Inc.', type: 'Stock', price: 175.20, base: 175.20, step: 1, decimals: 2 },
+        { symbol: 'TSLA', name: 'Tesla Inc.', type: 'Stock', price: 182.50, base: 182.50, step: 1, decimals: 2 },
+        { symbol: 'NVDA', name: 'NVIDIA Corp.', type: 'Stock', price: 875.12, base: 875.12, step: 1, decimals: 2 },
+        { symbol: 'MSFT', name: 'Microsoft Corp.', type: 'Stock', price: 420.30, base: 420.30, step: 1, decimals: 2 }
     ];
 
-    // Simulates natural variance in global asset pricing matrix
     function simulateMarketTicks() {
-        trackedEquities.forEach(equity => {
-            const percentageShift = (Math.random() - 0.495) * 0.008; // Slight positive drift bias
-            equity.price *= (1 + percentageShift);
+        trackedEquities.forEach(asset => {
+            // Crypto assets exhibit higher localized drift variance compared to structural blue-chip equities
+            const varianceLimit = asset.type === 'Crypto' ? 0.015 : 0.006;
+            const percentageShift = (Math.random() - 0.492) * varianceLimit; 
+            asset.price *= (1 + percentageShift);
         });
         saveAndRender();
     }
 
     function saveAndRender() {
-        localStorage.setItem('paper_trading_state', JSON.stringify(sessionState));
+        localStorage.setItem('multi_asset_trading_state', JSON.stringify(sessionState));
         
+        let aggregatePortfolioValue = 0;
+        const portfolioBody = document.querySelector('#portfolio-table tbody');
+        portfolioBody.innerHTML = '';
+        
+        Object.keys(sessionState.portfolio).forEach(symbol => {
