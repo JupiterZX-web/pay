@@ -1,14 +1,13 @@
-/* Core Document Configurations */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 body {
-    background-color: #f4f7f6;
-    color: #2c3e50;
+    background-color: #f1f5f9;
+    color: #1e293b;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -16,54 +15,73 @@ body {
     padding: 20px;
 }
 
-/* Structural Dashboard Layout Containers */
 .admin-container {
     width: 100%;
-    max-width: 950px;
+    max-width: 900px;
     background: #ffffff;
     border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     padding: 30px;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+}
+
+.status-badge {
+    background-color: #dcfce7;
+    color: #15803d;
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 25px;
-    margin-top: 20px;
 }
 
 .panel-card {
-    background: #fafbfc;
+    background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     padding: 20px;
 }
 
-/* User Interface Input Controls */
+h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #334155;
+}
+
 .form-input-group {
     margin-bottom: 15px;
 }
 
 .form-input-group label {
     display: block;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
+    color: #64748b;
     margin-bottom: 6px;
     text-transform: uppercase;
-    color: #718096;
 }
 
 .form-input-group input {
     width: 100%;
-    padding: 10px 12px;
+    padding: 10px;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     font-size: 15px;
-    background: #ffffff;
 }
 
-/* Functional Dashboard Button Matrices */
 .btn-action-base {
     width: 100%;
     padding: 12px;
@@ -72,42 +90,31 @@ body {
     font-weight: 600;
     font-size: 15px;
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: filter 0.1s ease;
 }
 
-.btn-primary { background-color: #3182ce; color: #ffffff; }
-.btn-primary:hover { background-color: #2b6cb0; }
+.btn-action-base:hover { filter: brightness(0.9); }
+.btn-primary { background-color: #2563eb; color: #fff; }
+.action-row { display: flex; gap: 12px; }
+.btn-deposit { background-color: #16a34a; color: #fff; }
+.btn-confiscate { background-color: #ea580c; color: #fff; }
 
-.action-row {
-    display: flex;
-    gap: 12px;
-}
-
-.btn-deposit { background-color: #38a169; color: #ffffff; }
-.btn-deposit:hover { background-color: #2f855a; }
-
-.btn-confiscate { background-color: #dd6b20; color: #ffffff; }
-.btn-confiscate:hover { background-color: #c05621; }
-
-/* Ledger Table Frameworks */
 .ledger-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
 }
 
-.ledger-table th, 
-.ledger-table td {
-    padding: 12px 16px;
+.ledger-table th, .ledger-table td {
+    padding: 12px;
     text-align: left;
     border-bottom: 1px solid #e2e8f0;
 }
 
-.ledger-table th {
-    background-color: #edf2f7;
-    font-weight: 600;
-    color: #4a5568;
-}
+.ledger-table th { background-color: #f1f5f9; color: #475569; }
+.balance-positive { color: #16a34a; font-weight: bold; }
+.balance-negative { color: #dc2626; font-weight: bold; }
 
-.balance-positive { color: #38a169; font-weight: bold; }
-.balance-negative { color: #e53e3e; font-weight: bold; }
+.toast { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-weight: 500; text-align: center; }
+.toast-success { background: #dcfce7; color: #15803d; }
+.toast-error { background: #fee2e2; color: #991b1b; }
+.hidden { display: none; }
