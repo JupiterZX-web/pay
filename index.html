@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Wallet Ledger Control Hub</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="admin-container">
+        <!-- HEADER BLOCK -->
+        <div class="dashboard-header">
+            <div>
+                <h1>E-Wallet Control Hub</h1>
+                <p>Root Operator: <strong>jupiter</strong></p>
+            </div>
+            <div class="status-badge">System Live</div>
+        </div>
+
+        <!-- NOTIFICATION TOAST FEEDBACK -->
+        <div id="statusToast" class="toast hidden"></div>
+
+        <div class="dashboard-grid">
+            <!-- PANEL: ACCOUNT REGISTRATION -->
+            <div class="panel-card">
+                <h2>Onboard New Wallet</h2>
+                <div class="form-input-group">
+                    <label for="newUsername">Account Holder Name</label>
+                    <input type="text" id="newUsername" placeholder="e.g. charlie">
+                </div>
+                <div class="form-input-group">
+                    <label for="initialDeposit">Starting Balance ($)</label>
+                    <input type="number" id="initialDeposit" value="0.00" min="0" step="0.01">
+                </div>
+                <button class="btn-action-base btn-primary" onclick="createNewUser()">Register Client Profile</button>
+            </div>
+
+            <!-- PANEL: LEDGER MODIFICATION ENGINE -->
+            <div class="panel-card">
+                <h2>Override Financial Balance</h2>
+                <div class="form-input-group">
+                    <label for="targetUser">Target Client Username</label>
+                    <input type="text" id="targetUser" placeholder="e.g. alice">
+                </div>
+                <div class="form-input-group">
+                    <label for="transactionAmount">Adjustment Value ($)</label>
+                    <input type="number" id="transactionAmount" min="0.01" step="0.01" placeholder="0.00">
+                </div>
+                <div class="action-row">
+                    <button class="btn-action-base btn-deposit" onclick="modifyFunds('add')">Add Money</button>
+                    <button class="btn-action-base btn-confiscate" onclick="modifyFunds('take')">Take Money</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL: GLOBAL CAPITAL OVERVIEW -->
+        <div class="panel-card" style="margin-top: 25px;">
+            <h2>System Database Balances</h2>
+            <table class="ledger-table">
+                <thead>
+                    <tr>
+                        <th>Account Holder</th>
+                        <th>Current Capital Holding</th>
+                    </tr>
+                </thead>
+                <tbody id="ledgerTableBody">
+                    <!-- Loaded dynamically via JavaScript backend fetch -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:8080/api/wallet";
+
+        // Fetch running state from Java server
+        async function fetchLedger() {
+            try {
+                const response = await fetch(`${API_BASE}/ledger`);
+                const data = await response.json();
+                const tbody = document.getElementById("ledgerTableBody");
+                tbody.innerHTML = "";
+
+                for (const [username, balance] of Object.entries(data)) {
+                    const row = document.createElement("tr");
+                    
+                    const userCell = document.createElement("td");
+                    userCell.textContent = username;
+                    
+                    const balanceCell = document.createElement("td");
+                    balanceCell.textContent = `$${balance.toFixed(2)}`;
+                    balanceCell.className = balance >= 0 ? "balance-positive" : "balance-negative";
+
+                    row.appendChild(userCell);
+                    row.appendChild(balanceCell);
+                    tbody.appendChild(row);
+                }
+            } catch (err) {
+                showToast("Connection failure with backend server.", "error");
+            }
+        }
+
+        // Onboard user endpoint mapping
+        async function createNewUser() {
+            const username = document.getElementById("newUsername").value.trim().toLowerCase();
+            const balance = parseFloat(document.getElementById("initialDeposit").value);
+
+            const response = await fetch(`${API_BASE}/create?username=${username}&balance=${balance}`, { method: 'POST' });
+            const message = await response.text();
+            
+            showToast(message, response.ok ? "success" : "error");
+            if (response.ok) {
+                document.getElementById("newUsername").value = "";
+                document.getElementById("initialDeposit").value = "0.00";
+                fetchLedger();
+            }
+        }
+
+        // Financial adjustments processing logic
+        async function modifyFunds(action) {
+            const username = document.getElementById("targetUser").value.trim().toLowerCase();
+            const amount = parseFloat(document.getElementById("transactionAmount").value);
+
+            const endpoint = action === 'add' ? 'add' : 'take';
+            const response = await fetch(`${API_BASE}/${endpoint}?username=${username}&amount=${amount}`, { method: 'POST' });
+            const message = await response.text();
+
+            showToast(message, response.ok ? "success" : "error");
+            if (response.ok) {
+                document.getElementById("targetUser").value = "";
+                document.getElementById("transactionAmount").value = "";
+                fetchLedger();
+            }
+        }
+
+        function showToast(msg, type) {
+            const toast = document.getElementById("statusToast");
+            toast.textContent = msg;
+            toast.className = `toast toast-${type}`;
+            setTimeout(() => toast.classList.add("hidden"), 4000);
+        }
+
+        // Initial system load
+        fetchLedger();
+    </script>
+</body>
+</html>
