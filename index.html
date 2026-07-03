@@ -1,288 +1,120 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Wallet Management Gateway</title>
-    <style>
-        /* Modern UI Design Variable Engine */
-        :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --panel-bg: rgba(30, 41, 59, 0.7);
-            --border-glow: rgba(99, 102, 241, 0.2);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --success: #10b981;
-            --success-hover: #059669;
-            --danger: #f43f5e;
-            --danger-hover: #e11d48;
+<script>
+    const API_BASE = "http://localhost:8080/api/wallet";
+
+    // Core Login Handler connecting to Java backend
+    async function verifyAdminGateway() {
+        const user = document.getElementById("adminUser").value.trim();
+        const pass = document.getElementById("adminPass").value;
+
+        if (!user || !pass) {
+            triggerNotification("authToast", "Please complete all validation fields.", "error");
+            return;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        try {
+            // Forward authorization payload to Spring Boot server
+            const response = await fetch(`${API_BASE}/login?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                // Clear login inputs
+                document.getElementById("adminUser").value = "";
+                document.getElementById("adminPass").value = "";
+
+                // Transition layout workspace views
+                document.getElementById("authPanel").classList.add("hidden");
+                document.getElementById("dashboardPanel").classList.remove("hidden");
+                document.getElementById("operatorDisplay").textContent = user;
+                
+                // Fetch the live database logs immediately upon success
+                fetchLedger();
+            } else {
+                const errorMsg = await response.text();
+                triggerNotification("authToast", errorMsg, "error");
+            }
+        } catch (err) {
+            triggerNotification("authToast", "Connection failure: Ensure Java server is online.", "error");
+        }
+    }
+
+    function terminateSession() {
+        document.getElementById("dashboardPanel").classList.add("hidden");
+        document.getElementById("authPanel").classList.remove("hidden");
+    }
+
+    // Realtime System Ledger Mapping Engine
+    async function fetchLedger() {
+        try {
+            const response = await fetch(`${API_BASE}/ledger`);
+            const data = await response.json();
+            const tbody = document.getElementById("ledgerTableBody");
+            tbody.innerHTML = "";
+
+            for (const [username, balance] of Object.entries(data)) {
+                const row = document.createElement("tr");
+                
+                const userCell = document.createElement("td");
+                userCell.textContent = username;
+                
+                const balanceCell = document.createElement("td");
+                balanceCell.textContent = `$${balance.toFixed(2)}`;
+                balanceCell.className = balance >= 0 ? "val-positive" : "val-negative";
+
+                row.appendChild(userCell);
+                row.appendChild(balanceCell);
+                tbody.appendChild(row);
+            }
+        } catch (err) {
+            triggerNotification("dashboardToast", "Backend connection dropped.", "error");
+        }
+    }
+
+    async function createNewUser() {
+        const username = document.getElementById("newUsername").value.trim().toLowerCase();
+        const balance = parseFloat(document.getElementById("initialDeposit").value);
+
+        if(!username) {
+            triggerNotification("dashboardToast", "Execution Blocked: Target name undefined.", "error");
+            return;
         }
 
-        body {
-            background: var(--bg-gradient);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        /* Reusable Utility Constraints */
-        .hidden { display: none !important; }
-
-        /* Auth Screen Frame Styling */
-        .auth-card {
-            background: var(--panel-bg);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--border-glow);
-            padding: 40px;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            text-align: center;
-        }
-
-        .auth-card h1 {
-            font-size: 26px;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-        }
-
-        .auth-card p {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 24px;
-        }
-
-        /* Core Dashboard Layout Configurations */
-        .dashboard-container {
-            width: 100%;
-            max-width: 1000px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .dashboard-header {
-            background: var(--panel-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-glow);
-            padding: 24px;
-            border-radius: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-title h2 { font-size: 22px; letter-spacing: -0.5px; }
-        .header-title p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
-
-        .control-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        @media (max-width: 768px) {
-            .control-grid { grid-template-columns: 1fr; }
-        }
-
-        .glass-panel {
-            background: var(--panel-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-glow);
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .glass-panel h3 {
-            font-size: 18px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--primary);
-            padding-left: 10px;
-        }
-
-        /* Consolidated Form Element Subsets */
-        .form-group {
-            margin-bottom: 18px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: var(--text-main);
-            font-size: 15px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
-        }
-
-        /* Dynamic Button Assemblies */
-        .btn {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-success:hover { background: var(--success-hover); }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-danger:hover { background: var(--danger-hover); }
+        const response = await fetch(`${API_BASE}/create?username=${username}&balance=${balance}`, { method: 'POST' });
+        const message = await response.text();
         
-        .btn-logout {
-            width: auto;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-main);
-            padding: 8px 16px;
-            font-size: 14px;
+        triggerNotification("dashboardToast", message, response.ok ? "success" : "error");
+        if (response.ok) {
+            document.getElementById("newUsername").value = "";
+            document.getElementById("initialDeposit").value = "0.00";
+            fetchLedger();
         }
-        .btn-logout:hover { background: rgba(255, 255, 255, 0.2); }
+    }
 
-        .btn-row { display: flex; gap: 12px; }
+    async function modifyFunds(action) {
+        const username = document.getElementById("targetUser").value.trim().toLowerCase();
+        const amount = parseFloat(document.getElementById("transactionAmount").value);
 
-        /* Real-time System Ledger Matrices */
-        .ledger-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        .ledger-table th, .ledger-table td {
-            padding: 14px 16px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        if(!username || isNaN(amount) || amount <= 0) {
+            triggerNotification("dashboardToast", "Validation Fault: Verify target parameters.", "error");
+            return;
         }
 
-        .ledger-table th {
-            font-size: 13px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            font-weight: 600;
-            letter-spacing: 0.5px;
+        const endpoint = action === 'add' ? 'add' : 'take';
+        const response = await fetch(`${API_BASE}/${endpoint}?username=${username}&amount=${amount}`, { method: 'POST' });
+        const message = await response.text();
+
+        triggerNotification("dashboardToast", message, response.ok ? "success" : "error");
+        if (response.ok) {
+            document.getElementById("targetUser").value = "";
+            document.getElementById("transactionAmount").value = "";
+            fetchLedger();
         }
+    }
 
-        .ledger-table tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .val-positive { color: var(--success); font-weight: 600; }
-        .val-negative { color: var(--danger); font-weight: 600; }
-
-        /* UI Notification Banner Systems */
-        .toast {
-            padding: 14px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            text-align: center;
-            margin-bottom: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-        .toast-success { background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); color: #34d399; }
-        .toast-error { background: rgba(244, 63, 94, 0.15); border: 1px solid var(--danger); color: #fb7185; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- PORTAL COMPONENT: SYSTEM LOGIN -->
-    <div id="authPanel" class="auth-card">
-        <h1>Administrative Core</h1>
-        <p>E-Wallet Network Ledger Authentication</p>
-        <div id="authToast" class="toast hidden"></div>
-        <div class="form-group">
-            <label for="adminUser">System Operator ID</label>
-            <input type="text" id="adminUser" class="form-input" placeholder="Username...">
-        </div>
-        <div class="form-group">
-            <label for="adminPass">Security Passphrase</label>
-            <input type="password" id="adminPass" class="form-input" placeholder="Password...">
-        </div>
-        <button class="btn btn-primary" onclick="verifyAdminGateway()">Authenticate Terminal</button>
-    </div>
-
-    <!-- PORTAL COMPONENT: MANAGEMENT DASHBOARD -->
-    <div id="dashboardPanel" class="dashboard-container hidden">
-        <div class="dashboard-header">
-            <div class="header-title">
-                <h2>E-Wallet Master Ledger</h2>
-                <p>Operator Active Session: <span id="operatorDisplay" style="color: var(--primary); font-weight:600;"></span></p>
-            </div>
-            <button class="btn btn-logout" onclick="terminateSession()">Lock Terminal</button>
-        </div>
-
-        <div id="dashboardToast" class="toast hidden"></div>
-
-        <div class="control-grid">
-            <!-- ENGINE: USER CREATION -->
-            <div class="glass-panel">
-                <h3>Initialize Wallet Profile</h3>
-                <div class="form-group">
-                    <label for="newUsername">Client Identity String</label>
-                    <input type="text" id="newUsername" class="form-input" placeholder="e.g. david">
-                </div>
-                <div class="form-group">
-                    <label for="initialDeposit">Opening Position Balance ($)</label>
-                    <input type="number" id="initialDeposit" class="form-input" value="0.00" min="0" step="0.01">
-                </div>
-                <button class="btn btn-primary" onclick="createNewUser()">Onboard Wallet</button>
-            </div>
-
-            <!-- ENGINE: BALANCE OVERRIDES -->
-            <div class="glass-panel">
-                <h3>Balance Modification Framework</h3>
-                <div class="form-group">
-                    <label for="targetUser">Target Wallet Address</label>
-                    <input type="text" id="targetUser" class="form-input" placeholder="e.g. alice">
-                </div>
-                <div class="form-group">
-                    <label for="transactionAmount">Capital Delta Magnitude ($)</label>
-                    <input type="number" id="transactionAmount" class="form-input" min="0.01" step="0.01" placeholder="0.00">
-                </div>
-                <div class="btn-row">
-                    <button class="btn btn-success" onclick="modifyFunds('add')">Inject Capital</button>
+    function triggerNotification(targetId, msg, type) {
+        const toast = document.getElementById(targetId);
+        toast.textContent = msg;
+        toast.className = `toast toast-${type}`;
+        setTimeout(() => toast.classList.add("hidden"), 5000);
+    }
+</script>
