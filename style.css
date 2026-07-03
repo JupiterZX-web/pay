@@ -1,182 +1,113 @@
-/* Reset and Base Rules */
+/* Core Document Configurations */
 * {
     box-sizing: border-box;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     margin: 0;
     padding: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 body {
-    background-color: #f5f7fa;
+    background-color: #f4f7f6;
+    color: #2c3e50;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    padding: 20px;
 }
 
-/* Card Container */
-.paypal-container {
-    background: #ffffff;
-    border: 1px solid #dcdcdc;
-    border-radius: 8px;
+/* Structural Dashboard Layout Containers */
+.admin-container {
     width: 100%;
-    max-width: 460px;
-    padding: 40px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    text-align: center;
+    max-width: 950px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+    padding: 30px;
 }
 
-/* Brand Logo Typography */
-.logo {
-    font-size: 32px;
-    font-weight: bold;
-    font-style: italic;
-    margin-bottom: 30px;
-    user-select: none;
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-top: 20px;
 }
 
-.logo span:nth-child(1) {
-    color: #003087;
+.panel-card {
+    background: #fafbfc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
 }
 
-.logo span:nth-child(2) {
-    color: #0079c1;
+/* User Interface Input Controls */
+.form-input-group {
+    margin-bottom: 15px;
 }
 
-/* Order Header Component */
-.order-summary {
-    background-color: #fcfcfd;
-    border: 1px solid #eeeeee;
-    border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    text-align: left;
-}
-
-.order-details h3 {
-    font-size: 15px;
-    color: #2c2e2f;
-}
-
-.order-details p {
-    font-size: 13px;
-    color: #6c7378;
-    margin-top: 2px;
-}
-
-.price {
-    font-size: 18px;
-    font-weight: bold;
-    color: #2c2e2f;
-}
-
-/* Form Fields */
-.input-group {
-    margin-bottom: 20px;
-    text-align: left;
-}
-
-.input-group label {
+.form-input-group label {
     display: block;
-    font-size: 14px;
-    color: #2c2e2f;
-    margin-bottom: 8px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    color: #718096;
 }
 
-.input-group input {
+.form-input-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 15px;
+    background: #ffffff;
+}
+
+/* Functional Dashboard Button Matrices */
+.btn-action-base {
     width: 100%;
     padding: 12px;
-    border: 1px solid #a6a6a6;
-    border-radius: 4px;
-    font-size: 16px;
-    transition: border-color 0.2s;
-}
-
-.input-group input:focus {
-    border-color: #0079c1;
-    outline: none;
-}
-
-/* Action Buttons */
-.btn-login {
-    width: 100%;
-    background-color: #0070ba;
-    color: white;
     border: none;
-    padding: 14px;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 15px;
     cursor: pointer;
-    margin-top: 10px;
-    transition: background-color 0.2s;
+    transition: background 0.15s ease;
 }
 
-.btn-login:hover {
-    background-color: #005ea6;
-}
+.btn-primary { background-color: #3182ce; color: #ffffff; }
+.btn-primary:hover { background-color: #2b6cb0; }
 
-/* Loading/Disabled Button State */
-.btn-login:disabled {
-    background-color: #a6d1ed;
-    cursor: not-allowed;
-}
-
-.divider {
-    margin: 25px 0;
+.action-row {
     display: flex;
-    align-items: center;
-    text-align: center;
-    color: #6c7378;
-    font-size: 13px;
+    gap: 12px;
 }
 
-.divider::before, .divider::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid #dcdcdc;
-}
+.btn-deposit { background-color: #38a169; color: #ffffff; }
+.btn-deposit:hover { background-color: #2f855a; }
 
-.divider:not(:empty)::before {
-    margin-right: .5em;
-}
+.btn-confiscate { background-color: #dd6b20; color: #ffffff; }
+.btn-confiscate:hover { background-color: #c05621; }
 
-.divider:not(:empty)::after {
-    margin-left: .5em;
-}
-
-.btn-card {
+/* Ledger Table Frameworks */
+.ledger-table {
     width: 100%;
-    background-color: #e1e7eb;
-    color: #00457c;
-    border: none;
-    padding: 14px;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
-.btn-card:hover {
-    background-color: #d2dae0;
+.ledger-table th, 
+.ledger-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
 }
 
-/* Footer elements */
-.footer-links {
-    margin-top: 30px;
-    font-size: 12px;
+.ledger-table th {
+    background-color: #edf2f7;
+    font-weight: 600;
+    color: #4a5568;
 }
 
-.footer-links a {
-    color: #0079c1;
-    text-decoration: none;
-}
-
-.footer-links a:hover {
-    text-decoration: underline;
-}
+.balance-positive { color: #38a169; font-weight: bold; }
+.balance-negative { color: #e53e3e; font-weight: bold; }
