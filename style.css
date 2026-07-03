@@ -1,120 +1,307 @@
+/* ==========================================================================
+   1. GLOBAL ARCHITECTURE & CORE SETTINGS
+   ========================================================================== */
+:root {
+    /* Visual Design Variable Matrix */
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    --panel-bg: rgba(30, 41, 59, 0.7);
+    --border-glow: rgba(99, 102, 241, 0.2);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --success: #10b981;
+    --success-hover: #059669;
+    --danger: #f43f5e;
+    --danger-hover: #e11d48;
+    
+    /* Layout & Animation Dynamics */
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius-main: 16px;
+    --radius-inner: 8px;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
 body {
-    background-color: #f1f5f9;
-    color: #1e293b;
+    background: var(--bg-gradient);
+    color: var(--text-main);
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
     padding: 20px;
 }
 
-.admin-container {
+/* ==========================================================================
+   2. REUSABLE UTILITIES & SYSTEM LAYOUTS
+   ========================================================================== */
+.hidden { 
+    display: none !important; 
+}
+
+/* ==========================================================================
+   3. AUTHENTICATION SHIELD LAYOUT
+   ========================================================================== */
+.auth-card {
+    background: var(--panel-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glow);
+    padding: 40px;
+    border-radius: var(--radius-main);
     width: 100%;
-    max-width: 900px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    padding: 30px;
+    max-width: 420px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    text-align: center;
 }
 
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #f1f5f9;
-    padding-bottom: 15px;
-    margin-bottom: 25px;
-}
-
-.status-badge {
-    background-color: #dcfce7;
-    color: #15803d;
-    padding: 6px 12px;
-    border-radius: 50px;
-    font-size: 13px;
+.auth-card h1 {
+    font-size: 26px;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
     font-weight: 700;
 }
 
-.dashboard-grid {
+.auth-card p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+/* ==========================================================================
+   4. MANAGEMENT CORE DASHBOARD ENGINE
+   ========================================================================== */
+.dashboard-container {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.dashboard-header {
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-glow);
+    padding: 24px;
+    border-radius: var(--radius-main);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title h2 { 
+    font-size: 22px; 
+    letter-spacing: -0.5px; 
+}
+
+.header-title p { 
+    color: var(--text-muted); 
+    font-size: 14px; 
+    margin-top: 4px; 
+}
+
+.control-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 25px;
+    gap: 24px;
 }
 
-.panel-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 20px;
+.glass-panel {
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-glow);
+    padding: 24px;
+    border-radius: var(--radius-main);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-h2 {
+.glass-panel h3 {
     font-size: 18px;
-    margin-bottom: 15px;
-    color: #334155;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--primary);
+    padding-left: 10px;
+    font-weight: 600;
 }
 
-.form-input-group {
-    margin-bottom: 15px;
+/* ==========================================================================
+   5. INTERFACE INPUT LAYERS & MATRICES
+   ========================================================================== */
+.form-group {
+    margin-bottom: 18px;
+    text-align: left;
 }
 
-.form-input-group label {
+.form-group label {
     display: block;
     font-size: 12px;
     font-weight: 600;
-    color: #64748b;
-    margin-bottom: 6px;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
 }
 
-.form-input-group input {
+.form-input {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    padding: 12px 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-inner);
+    color: var(--text-main);
     font-size: 15px;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.btn-action-base {
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+/* ==========================================================================
+   6. FUNCTIONAL RUNTIME ACTIONS (BUTTON ASSEMBLY)
+   ========================================================================== */
+.btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
-    padding: 12px;
+    padding: 12px 20px;
     border: none;
-    border-radius: 6px;
-    font-weight: 600;
+    border-radius: var(--radius-inner);
     font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
-    transition: filter 0.1s ease;
+    transition: background-color var(--transition-fast), transform 0.1s ease;
 }
 
-.btn-action-base:hover { filter: brightness(0.9); }
-.btn-primary { background-color: #2563eb; color: #fff; }
-.action-row { display: flex; gap: 12px; }
-.btn-deposit { background-color: #16a34a; color: #fff; }
-.btn-confiscate { background-color: #ea580c; color: #fff; }
+.btn:active { 
+    transform: scale(0.98); 
+}
 
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-hover); }
+
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: var(--success-hover); }
+
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: var(--danger-hover); }
+
+.btn-logout {
+    width: auto;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    padding: 8px 16px;
+    font-size: 14px;
+}
+.btn-logout:hover { 
+    background: rgba(255, 255, 255, 0.2); 
+}
+
+.btn-row { 
+    display: flex; 
+    gap: 12px; 
+}
+
+/* ==========================================================================
+   7. RUNTIME CAPITAL LEDGER GRIDS
+   ========================================================================== */
 .ledger-table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
 }
 
-.ledger-table th, .ledger-table td {
-    padding: 12px;
+.ledger-table th, 
+.ledger-table td {
+    padding: 14px 16px;
     text-align: left;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.ledger-table th { background-color: #f1f5f9; color: #475569; }
-.balance-positive { color: #16a34a; font-weight: bold; }
-.balance-negative { color: #dc2626; font-weight: bold; }
+.ledger-table th {
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
 
-.toast { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-weight: 500; text-align: center; }
-.toast-success { background: #dcfce7; color: #15803d; }
-.toast-error { background: #fee2e2; color: #991b1b; }
-.hidden { display: none; }
+.ledger-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.val-positive { 
+    color: var(--success); 
+    font-weight: 600; 
+}
+
+.val-negative { 
+    color: var(--danger); 
+    font-weight: 600; 
+}
+
+/* ==========================================================================
+   8. SYSTEM STATUS & TELEMETRY ALERTS
+   ========================================================================== */
+.toast {
+    padding: 14px;
+    border-radius: var(--radius-inner);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.toast-success { 
+    background: rgba(16, 185, 129, 0.15); 
+    border: 1px solid var(--success); 
+    color: #34d399; 
+}
+
+.toast-error { 
+    background: rgba(244, 63, 94, 0.15); 
+    border: 1px solid var(--danger); 
+    color: #fb7185; 
+}
+
+/* ==========================================================================
+   9. MEDIA QUERIES (MOBILE OPTIMIZATION BREAKPOINTS)
+   ========================================================================== */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .control-grid { 
+        grid-template-columns: 1fr; 
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        align-items: center;
+    }
+    
+    .btn-logout {
+        width: 100%;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
