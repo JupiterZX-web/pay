@@ -253,39 +253,45 @@
     </div>
 </div>
 
-<div id="notification-toast" class="toast">Order Executed Successfully</div>
+<div id="notification-toast" class="toast">Order processed successfully</div>
 
 <script>
-    const STARTING_CASH = 100000.00;
-    let sessionState = JSON.parse(localStorage.getItem('multi_asset_trading_state')) || {
-        cash: STARTING_CASH,
-        portfolio: {} 
+    // Core state management configurations
+    const INITIAL_CASH = 100000.00;
+    let portfolio = {
+        cash: INITIAL_CASH,
+        holdings: {} // Format: { SYMBOL: { quantity: 0, avgPrice: 0 } }
     };
 
-    // Consolidated global registry configuration utilizing live relative asset definitions
-    const trackedEquities = [
-        { symbol: 'BTC', name: 'Bitcoin', type: 'Crypto', price: 61500.00, base: 61500.00, step: 0.000001, decimals: 6 },
-        { symbol: 'AAPL', name: 'Apple Inc.', type: 'Stock', price: 175.20, base: 175.20, step: 1, decimals: 2 },
-        { symbol: 'TSLA', name: 'Tesla Inc.', type: 'Stock', price: 182.50, base: 182.50, step: 1, decimals: 2 },
-        { symbol: 'NVDA', name: 'NVIDIA Corp.', type: 'Stock', price: 875.12, base: 875.12, step: 1, decimals: 2 },
-        { symbol: 'MSFT', name: 'Microsoft Corp.', type: 'Stock', price: 420.30, base: 420.30, step: 1, decimals: 2 }
-    ];
+    // Live asset master node list
+    let marketData = {
+        'BTC': { name: 'Bitcoin', class: 'Crypto', price: 65000.00, change: 1.45, isFractional: true },
+        'ETH': { name: 'Ethereum', class: 'Crypto', price: 3500.00, change: -0.82, isFractional: true },
+        'AAPL': { name: 'Apple Inc.', class: 'Equities', price: 185.50, change: 0.65, isFractional: false },
+        'TSLA': { name: 'Tesla Inc.', class: 'Equities', price: 175.20, change: -3.41, isFractional: false },
+        'NVDA': { name: 'NVIDIA Corp.', class: 'Equities', price: 900.10, change: 5.23, isFractional: false },
+        'GLD': { name: 'SPDR Gold Shares', class: 'Commodities', price: 215.30, change: 0.12, isFractional: false }
+    };
 
-    function simulateMarketTicks() {
-        trackedEquities.forEach(asset => {
-            // Crypto assets exhibit higher localized drift variance compared to structural blue-chip equities
-            const varianceLimit = asset.type === 'Crypto' ? 0.015 : 0.006;
-            const percentageShift = (Math.random() - 0.492) * varianceLimit; 
-            asset.price *= (1 + percentageShift);
-        });
-        saveAndRender();
+    // Currency Formatting Engine
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
     }
 
-    function saveAndRender() {
-        localStorage.setItem('multi_asset_trading_state', JSON.stringify(sessionState));
+    // Initialize UI Dropdowns and Live Tickers
+    function init() {
+        const selectEl = document.getElementById('asset-select');
+        selectEl.innerHTML = '';
         
-        let aggregatePortfolioValue = 0;
-        const portfolioBody = document.querySelector('#portfolio-table tbody');
-        portfolioBody.innerHTML = '';
+        Object.keys(marketData).forEach(symbol => {
+            let option = document.createElement('option');
+            option.value = symbol;
+            option.textContent = `${symbol} - ${marketData[symbol].name}`;
+            selectEl.appendChild(option);
+        });
+
+        renderMarketTable();
+        adjustQuantityParameters();
+        updateBalanceDisplays();
         
-        Object.keys(sessionState.portfolio).forEach(symbol => {
+        // Start live ticker movement loop simulation
